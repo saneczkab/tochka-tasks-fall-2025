@@ -93,7 +93,7 @@ class Program
                     continue;
                 
                 var goalDoor = RoomIdxs[roomObj - 'A'];
-                var steps = j + 1 + Math.Abs(door - goalDoor) + _roomDepth;
+                var steps = j + 1 + Math.Abs(door - goalDoor);
                 heuristic += steps * Costs[roomObj];
             }
         }
@@ -105,7 +105,7 @@ class Program
                 continue;
             
             var goalDoor = RoomIdxs[hallObj - 'A'];
-            var steps = Math.Abs(goalDoor - i) + _roomDepth;
+            var steps = Math.Abs(goalDoor - i);
             heuristic += steps * Costs[hallObj];
         }
 
@@ -184,6 +184,9 @@ class Program
                 continue;
             
             var roomBottomIdx = room.LastIndexOf('.');
+            if (roomBottomIdx == -1)
+                continue;
+            
             var steps = roomBottomIdx + 1 + Math.Abs(door - i);
             var cost = steps * Costs[hallObj];
             
