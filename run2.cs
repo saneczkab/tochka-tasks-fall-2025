@@ -25,14 +25,14 @@ class Program
             graph[gateway].Remove(prevNode);
             graph[prevNode].Remove(gateway);
             
-            if (!IsAnyGatewayReachable(graph, start))
-            {
-                break;
-            }
-            
             if (path.Count > 2) 
             {
                 start = path[1];
+            }
+                        
+            if (!IsAnyGatewayReachable(graph, start))
+            {
+                break;
             }
         }
         
@@ -45,7 +45,6 @@ class Program
         var visited = new HashSet<string>();
         queue.Enqueue([start]);
         visited.Add(start);
-        var result = new List<string>();
 
         while (queue.Count > 0)
         {
@@ -58,24 +57,18 @@ class Program
                 if (char.IsUpper(neighbor[0]))
                 {
                     var newPath = path.Append(neighbor).ToList();
-                    if (result.Count == 0 || newPath.Count < result.Count || (newPath.Count == result.Count && 
-                        string.Compare(newPath.Last(), result.Last(), StringComparison.Ordinal) < 0))
-                    {
-                        result = newPath;
-                    }
+                    return newPath;
                 }
-                else
+
+                if (visited.Add(neighbor))
                 {
-                    if (visited.Add(neighbor))
-                    {
-                        var newPath = path.Append(neighbor).ToList();
-                        queue.Enqueue(newPath);
-                    }
+                    var newPath = path.Append(neighbor).ToList();
+                    queue.Enqueue(newPath);
                 }
             }
         }
         
-        return result;
+        return new List<string>();
     }
     
     private static bool IsAnyGatewayReachable(Dictionary<string, List<string>> graph, string start)
