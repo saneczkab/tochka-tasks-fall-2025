@@ -8,63 +8,97 @@ class Program
     {
         var result = new List<string>();
         var graph = ParseGraph(edges);
-        var gatewayData = GetGatewaysData(graph);
-        var depths = new List<int>(gatewayData.Keys);
-        depths.Sort();
+        const string start = "a";
 
-        foreach (var depth in depths)
+        while (true)
         {
-            var resultEdges = gatewayData[depth]
-                .OrderBy(edge => edge.gateway)
-                .ThenBy(edge => edge.lastNode);
-            
-            foreach (var (gateway, lastNode) in resultEdges)
+            var path = GetShotestGatewayPath(graph, start);
+            if (path.Count == 0)
             {
-                var edgeStr = $"{gateway}-{lastNode}";
-                result.Add(edgeStr);
+                break;
+            }
+            
+            var gateway = path.Last();
+            var prevNode = path[^2];
+            result.Add($"{gateway}-{prevNode}");
+
+            graph[gateway].Remove(prevNode);
+            graph[prevNode].Remove(gateway);
+            
+            if (!IsAnyGatewayReachable(graph, start))
+            {
+                break;
             }
         }
-
+        
         return result;
     }
-
-    private static Dictionary<int, List<(string gateway, string lastNode)>> 
-        GetGatewaysData(Dictionary<string, List<string>> graph, string start = "a")
+    
+    private static List<string> GetShotestGatewayPath(Dictionary<string, List<string>> graph, string start)
     {
-        var result = new Dictionary<int, List<(string gateway, string lastNode)>>();
+        var queue = new Queue<List<string>>();
         var visited = new HashSet<string>();
-        var queue = new Queue<(string node, int depth)>();
-        
-        queue.Enqueue((start, 0));
+        queue.Enqueue([start]);
         visited.Add(start);
+        var result = new List<string>();
 
         while (queue.Count > 0)
         {
-            var (currentNode, depth) = queue.Dequeue();
-            var neighbors = graph[currentNode];
-
+            var path = queue.Dequeue();
+            var node = path.Last();
+            var neighbors = graph[node].OrderBy(n => n);
+            
             foreach (var neighbor in neighbors)
             {
                 if (char.IsUpper(neighbor[0]))
                 {
-                    if (!result.ContainsKey(depth))
+                    var newPath = path.Append(neighbor).ToList();
+                    if (result.Count == 0 || newPath.Count < result.Count)
                     {
-                        result[depth] = new List<(string gateway, string lastNode)>();
+                        result = newPath;
                     }
-                    
-                    result[depth].Add((neighbor, currentNode));
                 }
                 else
                 {
                     if (visited.Add(neighbor))
                     {
-                        queue.Enqueue((neighbor, depth + 1));
+                        var newPath = path.Append(neighbor).ToList();
+                        queue.Enqueue(newPath);
                     }
                 }
             }
         }
         
         return result;
+    }
+    
+    private static bool IsAnyGatewayReachable(Dictionary<string, List<string>> graph, string start)
+    {
+        var visited = new HashSet<string>();
+        var queue = new Queue<string>();
+        queue.Enqueue(start);
+        visited.Add(start);
+
+        while (queue.Count > 0)
+        {
+            var node = queue.Dequeue();
+            var neighbors = graph[node];
+
+            foreach (var neighbor in neighbors)
+            {
+                if (char.IsUpper(neighbor[0]))
+                {
+                    return true;
+                }
+                
+                if (visited.Add(neighbor))
+                {
+                    queue.Enqueue(neighbor);
+                }
+            }
+        }
+        
+        return false;
     }
 
     private static Dictionary<string, List<string>> ParseGraph(List<(string, string)> edges)
@@ -90,7 +124,7 @@ class Program
         var edges = new List<(string, string)>();
         string line;
 
-        while ((line = Console.ReadLine()) != null)
+        while ((line = Console.ReadLine()) != "null")
         {
             line = line.Trim();
             if (!string.IsNullOrEmpty(line))
