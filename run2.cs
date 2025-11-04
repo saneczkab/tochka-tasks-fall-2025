@@ -8,7 +8,7 @@ class Program
     {
         var result = new List<string>();
         var graph = ParseGraph(edges);
-        const string start = "a";
+        var start = "a";
 
         while (true)
         {
@@ -28,6 +28,11 @@ class Program
             if (!IsAnyGatewayReachable(graph, start))
             {
                 break;
+            }
+            
+            if (path.Count > 2) 
+            {
+                start = path[1];
             }
         }
         
@@ -53,7 +58,8 @@ class Program
                 if (char.IsUpper(neighbor[0]))
                 {
                     var newPath = path.Append(neighbor).ToList();
-                    if (result.Count == 0 || newPath.Count < result.Count)
+                    if (result.Count == 0 || newPath.Count < result.Count || (newPath.Count == result.Count && 
+                        string.Compare(newPath.Last(), result.Last(), StringComparison.Ordinal) < 0))
                     {
                         result = newPath;
                     }
