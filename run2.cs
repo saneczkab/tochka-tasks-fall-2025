@@ -25,9 +25,10 @@ class Program
             graph[gateway].Remove(prevNode);
             graph[prevNode].Remove(gateway);
             
-            if (path.Count > 2) 
+            var nextPath = GetShotestGatewayPath(graph, start);
+            if (nextPath.Count > 1) 
             {
-                start = path[1];
+                start = nextPath[1];
             }
                         
             if (!IsAnyGatewayReachable(graph, start))
@@ -66,6 +67,7 @@ class Program
                 current = prev[current];
             }
 
+            path.Add(start);
             path.Reverse();
             return path;
         }
@@ -77,8 +79,9 @@ class Program
         HashSet<string> visited, Dictionary<string, string> prev)
     {
         var gatewaysFound = new HashSet<string>();
+        var queueCount = queue.Count;
 
-        for (var i = 0; i < queue.Count; i++)
+        for (var i = 0; i < queueCount; i++)
         {
             var node = queue.Dequeue();
             var neighbors = graph[node].OrderBy(n => n);
