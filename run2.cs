@@ -41,34 +41,67 @@ class Program
     
     private static List<string> GetShotestGatewayPath(Dictionary<string, List<string>> graph, string start)
     {
-        var queue = new Queue<List<string>>();
+        var queue = new Queue<string>();
         var visited = new HashSet<string>();
-        queue.Enqueue([start]);
+        var prev = new Dictionary<string, string>();
+        queue.Enqueue(start);
         visited.Add(start);
 
         while (queue.Count > 0)
         {
-            var path = queue.Dequeue();
-            var node = path.Last();
-            var neighbors = graph[node].OrderBy(n => n);
+            var gateways = FindGateways(graph, queue, visited, prev);
+
+            if (gateways.Count == 0)
+            {
+                continue;
+            }
             
+            var nearestGateway = gateways.OrderBy(g => g).First();
+            var path = new List<string>();
+            var current = nearestGateway;
+            
+            while (current != start)
+            {
+                path.Add(current);
+                current = prev[current];
+            }
+
+            path.Reverse();
+            return path;
+        }
+        
+        return new List<string>();
+    }
+
+    private static HashSet<string> FindGateways(Dictionary<string, List<string>> graph, Queue<string> queue,
+        HashSet<string> visited, Dictionary<string, string> prev)
+    {
+        var gatewaysFound = new HashSet<string>();
+
+        for (var i = 0; i < queue.Count; i++)
+        {
+            var node = queue.Dequeue();
+            var neighbors = graph[node].OrderBy(n => n);
+
             foreach (var neighbor in neighbors)
             {
                 if (char.IsUpper(neighbor[0]))
                 {
-                    var newPath = path.Append(neighbor).ToList();
-                    return newPath;
+                    prev.TryAdd(neighbor, node);
+                    gatewaysFound.Add(neighbor);
                 }
-
-                if (visited.Add(neighbor))
+                else
                 {
-                    var newPath = path.Append(neighbor).ToList();
-                    queue.Enqueue(newPath);
+                    if (visited.Add(neighbor))
+                    {
+                        prev[neighbor] = node;
+                        queue.Enqueue(neighbor);
+                    }
                 }
             }
         }
-        
-        return new List<string>();
+
+        return gatewaysFound;
     }
     
     private static bool IsAnyGatewayReachable(Dictionary<string, List<string>> graph, string start)
