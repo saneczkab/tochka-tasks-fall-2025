@@ -124,7 +124,7 @@ class Program
         var edges = new List<(string, string)>();
         string line;
 
-        while ((line = Console.ReadLine()) != "null")
+        while ((line = Console.ReadLine()) != null)
         {
             line = line.Trim();
             if (!string.IsNullOrEmpty(line))
