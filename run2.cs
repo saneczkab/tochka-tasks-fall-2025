@@ -81,11 +81,17 @@ class Program
         var gatewaysFound = new HashSet<string>();
         var queueCount = queue.Count;
 
-        for (var i = 0; i < queueCount; i++)
+        var endpoints = new List<string>();
+        while (queue.Count > 0)
         {
-            var node = queue.Dequeue();
-            var neighbors = graph[node].OrderBy(n => n);
+            endpoints.Add(queue.Dequeue());
+        }
+        endpoints.Sort(StringComparer.Ordinal);
 
+        foreach (var node in endpoints)
+        {
+            var neighbors = graph[node].OrderBy(n => n, StringComparer.Ordinal);
+            
             foreach (var neighbor in neighbors)
             {
                 if (char.IsUpper(neighbor[0]))
@@ -97,8 +103,8 @@ class Program
                 {
                     if (visited.Add(neighbor))
                     {
-                        prev[neighbor] = node;
                         queue.Enqueue(neighbor);
+                        prev[neighbor] = node;
                     }
                 }
             }
